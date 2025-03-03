@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "AirThings",
   "pluginType": "platform",
   "singular": true,
   "strictValidation": false,
@@ -10,7 +10,25 @@
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "AirThings"
+      },
+      "scanTime": {
+        "title": "Total scan time for AirThings devices in seconds",
+        "type": "integer",
+        "default": 60,
+        "description": "Total scan time for AirThings devices in seconds"
+      },
+      "retryAfter": {
+        "title": "Retry scan after delay in seconds",
+        "type": "integer",
+        "default": 30,
+        "description": "Specifies the delay in seconds before retrying the scan."
+      },
+      "refreshTime": {
+        "title": "Refresh time for AirThings devices in seconds (default 60min)",
+        "type": "integer",
+        "default": 3600,
+        "description": "Refresh time for AirThings devices in seconds"
       }
     }
   }

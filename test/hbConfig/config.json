@@ -24,7 +24,10 @@
     },
     {
       "name": "homebridge-plugin-name",
-      "platform": "ExampleHomebridgePlugin"
+      "platform": "AirThings",
+      "scanTime": 20,
+      "retryAfter": 30,
+      "refreshTime": 600
     }
   ],
   "accessories": []
