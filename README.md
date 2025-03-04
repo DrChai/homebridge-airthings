@@ -2,27 +2,28 @@
 
 `homebridge-airthings` is a plugin for [Homebridge](https://homebridge.io) that integrates with Airthings devices to monitor Radon levels in your home. *Currently, it only supports Airthings Wave 2*.
 ## Features
-- Automatically detects Airthings devices without needing the serial number or MAC address.
+- Automatically detects all Airthings devices nearby without needing the serial number or MAC address.
 - Compatible with Homebridge V2 as a dynamic platform.
 - Connects to devices using Bluetooth (noble), no hub or API required.
 
 ## Installation
 
 1. Install Homebridge using the [official instructions](https://github.com/homebridge/homebridge/wiki).
-2. Install the `@drchai/homebridge-airthings` plugin using npm:
+2. Install the `@dr_chai/homebridge-airthings` plugin using npm:
   ```sh
-  npm install -g @drchai/homebridge-airthings
+  npm install -g @dr_chai/homebridge-airthings
   ```
 3. Update your Homebridge `config.json` file to include the plugin configuration:
   ```json
   {
     "platforms": [
      {
-      "platform": "Airthings",
-      "name": "Airthings", 
-      "scanTime": 60, // Optional
+      "name": "AirThings",
+      "displayRadonSTA": false,
+      "displayRadonLTA": false,
+      "scanTime": 24, // Optional
+      "retryAfter": 30, // Optional
       "refreshTime": 3600, // Optional
-      "retryAfter": 30 // Optional
      }
     ]
   }

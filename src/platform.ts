@@ -6,12 +6,12 @@ import type {
   PlatformAccessory,
   PlatformConfig,
   Service,
-} from "homebridge";
+} from 'homebridge';
 
-import AirthingsAccessory from "./platformAccessory.js";
-import { PLATFORM_NAME, PLUGIN_NAME } from "./settings.js";
-import Scanner from "./ble.js";
-import AirthingsTypes from "./customCharacteristics.js";
+import AirthingsAccessory from './platformAccessory.js';
+import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
+import Scanner from './ble.js';
+import AirthingsTypes from './customCharacteristics.js';
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
@@ -28,20 +28,21 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
   // This is only required when using Custom Services and Characteristics not support by HomeKit
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public readonly AirthingsService: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   public readonly scanner: Scanner;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public readonly AirthingsCharacteristic: any;
 
   constructor(
     public readonly log: Logging,
     public readonly config: PlatformConfig,
-    public readonly api: API
+    public readonly api: API,
   ) {
     this.Service = api.hap.Service;
     this.Characteristic = api.hap.Characteristic;
     // this.RadonStaChar = createRadonSta(this.Characteristic);
     // this.RadonLtaChar = newRadonLta(this.Characteristic);
-    this.log.debug("Finished initializing platform:", this.config.name);
+    this.log.debug('Finished initializing platform:', this.config.name);
 
     this.scanner = new Scanner(
       {
@@ -49,24 +50,24 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
         retryAfter: this.config.retryAfter * 1000,
         refreshTime: this.config.refreshTime * 1000,
       },
-      this.log
+      this.log,
     );
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
     // Dynamic Platform plugins should only register new accessories after this event was fired,
     // in order to ensure they weren't added to homebridge already. This event can also be used
     // to start discovery of new accessories.
-    this.AirthingsCharacteristic = new AirthingsTypes(
-      api
-    ).Characteristics;
-    this.AirthingsService = new AirthingsTypes(api).Service;
-    this.api.on("didFinishLaunching", async () => {
-      log.debug("Executed didFinishLaunching callback");
+    const { displayRadonSTA, displayRadonLTA } = this.config;
+    const AirThings = new AirthingsTypes(api, displayRadonSTA, displayRadonLTA);
+    this.AirthingsCharacteristic =AirThings.Characteristics;
+    this.AirthingsService = AirThings.Service;
+    this.api.on('didFinishLaunching', async () => {
+      log.debug('Executed didFinishLaunching callback');
       // run the method to discover / register your devices as accessories
       await this.discoverDevices();
       this.scanner.startRunner();
     });
-    this.api.on("shutdown", () => this.pluginShutdown());
-    log.debug("Done.");
+    this.api.on('shutdown', () => this.pluginShutdown());
+    log.debug('Done.');
   }
 
   /**
@@ -74,7 +75,7 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
    * It should be used to set up event handlers for characteristics and update respective values.
    */
   configureAccessory(accessory: PlatformAccessory) {
-    this.log.info("Loading accessory from cache:", accessory.displayName);
+    this.log.info('Loading accessory from cache:', accessory.displayName);
 
     // add the restored accessory to the accessories cache, so we can track if it has already been registered
     this.accessories.set(accessory.UUID, accessory);
@@ -95,13 +96,13 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
     //   this.config.bleRefreshTime * 1000,
     // )
     this.log.info(
-      `Discovering Airthings devices for ${this.config.scanTime}s... `
+      `Discovering Airthings devices for ${this.config.scanTime}s... `,
     );
     const availableDevices = await this.scanner.getValidatedDevices();
-    this.log.info("Found Available devices: ", availableDevices);
+    this.log.info('Found Available devices: ', availableDevices);
 
     // loop over the discovered devices and register each one if it has not already been registered
-    for (const [sn, device] of availableDevices) {
+    for (const [, device] of availableDevices) {
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
       // number or MAC address
@@ -114,8 +115,8 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
       if (existingAccessory) {
         // the accessory already exists
         this.log.info(
-          "Restoring existing accessory from cache:",
-          existingAccessory.displayName
+          'Restoring existing accessory from cache:',
+          existingAccessory.displayName,
         );
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. e.g.:
@@ -131,12 +132,12 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
         // this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
       } else {
         // the accessory does not yet exist, so we need to create it
-        this.log.info("Adding new accessory:", device);
+        this.log.info('Adding new accessory:', device);
 
         // create a new accessory
         const accessory = new this.api.platformAccessory(
           device.displayName,
-          uuid
+          uuid,
         );
 
         // store a copy of the device object in the `accessory.context`
@@ -145,7 +146,7 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
 
         // create the accessory handler for the newly create accessory
         // this is imported from `platformAccessory.ts`
-        const myaccess = new AirthingsAccessory(this, accessory);
+        new AirthingsAccessory(this, accessory);
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
           accessory,
@@ -162,8 +163,8 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
     for (const [uuid, accessory] of this.accessories) {
       if (!this.discoveredCacheUUIDs.includes(uuid)) {
         this.log.info(
-          "Removing existing accessory from cache:",
-          accessory.displayName
+          'Removing existing accessory from cache:',
+          accessory.displayName,
         );
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
           accessory,

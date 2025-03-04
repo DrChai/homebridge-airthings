@@ -1,10 +1,9 @@
 {
-  "name": "@drchai/homebridge-airthings",
-  "displayName": "Airthings on BLE",
+  "name": "@dr_chai/homebridge-airthings",
+  "displayName": "Homebridge Airthings",
   "type": "module",
   "version": "1.0.0",
-  "private": true,
-  "description": "A short description about what your plugin does.",
+  "description": "Connecting all your Airthings devices over bluetooth with zero configuration.",
   "author": "Ed Chai",
   "license": "Apache-2.0",
   "homepage": "https://github.com/drchai/homebridge-airthings#readme",

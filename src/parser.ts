@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 // more info on: https://github.com/ztroop/wave-reader-utils/blob/master/docs/specs.md
 
-export const WAVE2_CURR_VAL_UUID = "b42e4dccade711e489d3123b93f75cba"
+export const WAVE2_CURR_VAL_UUID = 'b42e4dccade711e489d3123b93f75cba';
 const parseSerial = (manufacturer_data: Buffer): number | null => {
   try {
     const ID = manufacturer_data.readUInt16LE(0);
@@ -14,12 +14,14 @@ const parseSerial = (manufacturer_data: Buffer): number | null => {
     return null;
   }
   return null;
-}
+};
 
 const parseWave2Rawdata = (rawdata: Buffer): WAVE2 => {
-  const header = rawdata.readUInt8(0)
+  const header = rawdata.readUInt8(0);
   if (header !== 1) {
-    throw new Error(`Incompatible current values version (Expected 1, got ${header})`);
+    throw new Error(
+      `Incompatible current values version (Expected 1, got ${header})`,
+    );
   }
 
   return {
@@ -29,6 +31,6 @@ const parseWave2Rawdata = (rawdata: Buffer): WAVE2 => {
     temperature: rawdata.readUInt16LE(8) / 100.0,
     lastUpdateAt: Date.now(),
   };
-}
+};
 
 export { parseSerial, parseWave2Rawdata };

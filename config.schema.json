@@ -1,5 +1,7 @@
 {
   "pluginAlias": "AirThings",
+  "headerDisplay": "AirThings plugin for [Homebridge](https://github.com/nfarina/homebridge) using the Bluetooth(noble) only.",
+  "footerDisplay": "As of the time this plugin was implemented, [Apple HomeKit](https://developer.apple.com/documentation/homekit/characteristic-types#Air-quality-and-smoke-detection) does not recognize the Radon characteristic. To view Radon statistics, the plugin uses [SulphurDioxideDensity](https://developers.homebridge.io/#/characteristic/SulphurDioxideDensity) and [OzoneDensity](https://developers.homebridge.io/#/characteristic/OzoneDensity) to represent *Radon short-term average* and *Radon long-term average*, respectively.",
   "pluginType": "platform",
   "singular": true,
   "strictValidation": false,
@@ -12,24 +14,70 @@
         "required": true,
         "default": "AirThings"
       },
+      "displayRadonSTA": {
+        "title": "Display Radon short term avg.",
+        "description": "Uses the SulphurDioxideDensity field to display Radon short-term average. Homebridge will show the correct title.",
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
+      "displayRadonLTA": {
+        "title": "Display Radon long term avg.",
+        "description": "Uses the OzoneDensity field to display Radon long-term average. Homebridge will show the correct title.",
+        "type": "boolean",
+        "required": true,
+        "default": false
+      },
       "scanTime": {
-        "title": "Total scan time for AirThings devices in seconds",
+        "title": "Total scan time",
         "type": "integer",
         "default": 24,
-        "description": "Total scan time for AirThings devices in seconds"
+        "description": "Specifies the total scan time in seconds for discovering AirThings devices nearby."
       },
       "retryAfter": {
-        "title": "Retry scan after delay in seconds",
+        "title": "Retry after delay",
         "type": "integer",
         "default": 30,
         "description": "Specifies the delay in seconds before retrying the scan."
       },
       "refreshTime": {
-        "title": "Refresh time for AirThings devices in seconds (default 60min)",
+        "title": "Refresh time ",
         "type": "integer",
         "default": 3600,
-        "description": "Refresh time for AirThings devices in seconds"
+        "description": "Specifies the refresh time for sync data from all AirThings devices in seconds (default 60min)"
       }
     }
-  }
+  },
+  "layout": [
+    {
+      "type": "section",
+      "title": "General Settings",
+      "expandable": true,
+      "expanded": true,
+      "items": [
+        {
+          "items": [
+            "name",
+            "displayRadonSTA",
+            "displayRadonLTA"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Bluetooth Settings (Optional)",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "items": [
+            "scanTime",
+            "retryAfter",
+            "refreshTime"
+          ]
+        }
+      ]
+    }
+  ]
 }
