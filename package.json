@@ -2,7 +2,7 @@
   "name": "@dr_chai/homebridge-airthings",
   "displayName": "Homebridge Airthings",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Connecting all your Airthings devices over bluetooth with zero configuration.",
   "author": "Ed Chai",
   "license": "Apache-2.0",

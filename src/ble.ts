@@ -61,7 +61,7 @@ export default class {
     noble.startScanning([], true);
   };
 
-  getValidatedDevices = async () => {
+  getValidatedDevices = async (): Promise<Map<string, DeviceInfo>> => {
     if (this.curState !== 'poweredOn') {
       this.log.debug(
         '[BLE] Adapter is not powered on. Waiting for state to change...',
@@ -92,7 +92,8 @@ export default class {
       this.log.error(
         `[BLE] No devices found. Retrying after${this.config.retryAfter / 1000}`,
       );
-      setTimeout(this.getValidatedDevices, this.config.retryAfter);
+      await sleep(this.config.retryAfter);
+      return this.getValidatedDevices();
     }
     return this.discoveredDeivces;
   };

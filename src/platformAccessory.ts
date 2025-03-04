@@ -78,12 +78,18 @@ export default class Wave2Accessory {
     this.HumiditySvc.getCharacteristic(
       this.platform.Characteristic.CurrentRelativeHumidity,
     ).onGet(this.getAttr('humidity'));
+    this.RadonSvc.getCharacteristic(
+      this.platform.Characteristic.AirQuality,
+    ).onGet(() => {
+      this.getAttr('radon_sta');
+      return this.calAirQuality(this.lastData);
+    });
 
     if (displayRadonSTA) {
       this.RadonSvc.getCharacteristic(
         this.platform.AirthingsCharacteristic.RadonSta,
       ).onGet(this.getAttr('radon_sta'));
-    } 
+    }
     if (displayRadonLTA) {
       this.RadonSvc.getCharacteristic(
         this.platform.AirthingsCharacteristic.RadonLta,
@@ -114,14 +120,14 @@ export default class Wave2Accessory {
             this.platform.AirthingsCharacteristic.RadonSta,
             data.radon_sta,
           );
-        } 
+        }
         if (displayRadonLTA) {
           this.RadonSvc.updateCharacteristic(
             this.platform.AirthingsCharacteristic.RadonLta,
             data.radon_lta,
           );
         }
-        
+
         this.RadonSvc.updateCharacteristic(
           this.platform.Characteristic.StatusActive,
           Date.now() / 1000 - lastUpdateAt / 1000 < 2 * 3600,
