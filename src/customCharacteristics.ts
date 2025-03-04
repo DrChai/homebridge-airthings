@@ -2,7 +2,7 @@ import { Formats, Perms } from "homebridge";
 export const newRadonSta = (Char: any) =>
   class RadonSta extends Char {
     public static readonly UUID: string =
-      "B42E01AA-ADE7-11E4-89D3-123B93F75CBA";
+      "000000C5-0000-1000-8000-0026BB765291"; //SulphurDioxideDensity UUID
     constructor() {
       super("Radon Short Term Avg.", RadonSta.UUID, {
         format: Formats.UINT16,
@@ -19,7 +19,7 @@ export const newRadonSta = (Char: any) =>
 const newRadonLta = (Char: any) =>
   class RadonLta extends Char {
     public static readonly UUID: string =
-      "B42E0A4C-ADE7-11E4-89D3-123B93F75CBA";
+      "000000C3-0000-1000-8000-0026BB765291"; // Using OzoneDensity
     constructor() {
       super("Radon Long Term Avg.", RadonLta.UUID, {
         format: Formats.UINT16,
@@ -32,27 +32,31 @@ const newRadonLta = (Char: any) =>
       this.value = this.getDefaultValue();
     }
   };
-  class AirthingsTypes {
-    hap: any;
 
-    constructor(homebridge: any) {
-      this.hap = homebridge.hap;
-    }
-    get Service() {
-      const Characteristics = this.Characteristics;
-      return class AirThingsSensor extends this.hap.Service.AirQualitySensor {
-        constructor(displayName?: string, subtype?: string) {
-          super(displayName, subtype);
-          this.addCharacteristic(Characteristics.RadonLta);
-          this.addCharacteristic(Characteristics.RadonSta);
-        }
+class AirthingsTypes {
+  hap: any;
+
+  constructor(homebridge: any) {
+    this.hap = homebridge.hap;
+  }
+  get Service() {
+    const Characteristics = this.Characteristics;
+    const hapCharacteristic = this.hap.Characteristic
+    return class AirThingsSensor extends this.hap.Service.AirQualitySensor {
+      constructor(displayName?: string, subtype?: string) {
+        super(displayName, subtype);
+        this.removeCharacteristic(hapCharacteristic.OzoneDensity)
+        this.removeCharacteristic(hapCharacteristic.SulphurDioxideDensity)
+        this.addCharacteristic(Characteristics.RadonLta);
+        this.addCharacteristic(Characteristics.RadonSta);
       }
-    }
-    get Characteristics() {
-      return {
-        RadonLta: newRadonLta(this.hap.Characteristic),
-        RadonSta: newRadonSta(this.hap.Characteristic),
-      };
-    }
-  };
+    };
+  }
+  get Characteristics() {
+    return {
+      RadonLta: newRadonLta(this.hap.Characteristic),
+      RadonSta: newRadonSta(this.hap.Characteristic),
+    };
+  }
+}
 export default AirthingsTypes;

@@ -27,13 +27,10 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
 
   // This is only required when using Custom Services and Characteristics not support by HomeKit
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public readonly AirthingsServices: any;
+  public readonly AirthingsService: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public readonly CustomCharacteristics: any;
   public readonly scanner: Scanner;
-  public readonly RadonStaChar: any;
-  public readonly RadonLtaChar: any;
-  public readonly AirthingsCharacteristics: any;
+  public readonly AirthingsCharacteristic: any;
 
   constructor(
     public readonly log: Logging,
@@ -58,10 +55,10 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
     // Dynamic Platform plugins should only register new accessories after this event was fired,
     // in order to ensure they weren't added to homebridge already. This event can also be used
     // to start discovery of new accessories.
-    this.AirthingsCharacteristics = new AirthingsTypes(
-      this.api
+    this.AirthingsCharacteristic = new AirthingsTypes(
+      api
     ).Characteristics;
-    this.AirthingsServices = new AirthingsTypes(this.api).Service;
+    this.AirthingsService = new AirthingsTypes(api).Service;
     this.api.on("didFinishLaunching", async () => {
       log.debug("Executed didFinishLaunching callback");
       // run the method to discover / register your devices as accessories

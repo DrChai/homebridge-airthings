@@ -1,6 +1,7 @@
 import { PlatformAccessory, Service } from 'homebridge';
 
 import type AirThingsPlatform from './platform.js';
+import { time } from 'console';
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -36,10 +37,7 @@ export default class Wave2Accessory {
     // get the LightBulb service if it exists, otherwise create a new LightBulb service
     // you can create multiple services for each accessory
 
-    this.RadonSvc = this.accessory.getService(this.platform.AirthingsServices) || this.accessory.addService(this.platform.AirthingsServices);
-    // this.RadonSvc.getCharacteristic(this.platform.RadonLtaChar) || this.RadonSvc.addCharacteristic(this.platform.RadonLtaChar);
-    // this.RadonSvc.getCharacteristic(this.platform.AirthingsCharacteristics.RadonLta) || this.RadonSvc.addCharacteristic(this.platform.AirthingsCharacteristics.RadonLta);
-    // this.RadonSvc.getCharacteristic(this.platform.AirthingsCharacteristics.RadonSta) || this.RadonSvc.addCharacteristic(this.platform.AirthingsCharacteristics.RadonSta);
+    this.RadonSvc = this.accessory.getService(this.platform.AirthingsService) || this.accessory.addService(this.platform.AirthingsService);
     this.TempSvc = this.accessory.getService(this.platform.Service.TemperatureSensor) || this.accessory.addService(this.platform.Service.TemperatureSensor);
     this.HumiditySvc = this.accessory.getService(this.platform.Service.HumiditySensor) || this.accessory.addService(this.platform.Service.HumiditySensor);
    
@@ -61,9 +59,9 @@ export default class Wave2Accessory {
     this.HumiditySvc.getCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity)
       .onGet(this.getAttr('humidity'));
 
-    this.RadonSvc.getCharacteristic(this.platform.AirthingsCharacteristics.RadonSta)
+    this.RadonSvc.getCharacteristic(this.platform.AirthingsCharacteristic.RadonSta)
       .onGet(this.getAttr('radon_sta'));
-    this.RadonSvc.getCharacteristic(this.platform.AirthingsCharacteristics.RadonLta)
+    this.RadonSvc.getCharacteristic(this.platform.AirthingsCharacteristic.RadonLta)
       .onGet(this.getAttr('radon_lta'));
     /**
      * Updating characteristics values asynchronously.
@@ -77,18 +75,28 @@ export default class Wave2Accessory {
   
     setInterval(() => {
       const data = this.platform.scanner.lastData.get(this.device.sn);
-      // push the new value to HomeKit
-      this.RadonSvc.updateCharacteristic(this.platform.AirthingsCharacteristics.RadonLta, data?.radon_lta || 0);
-      this.RadonSvc.updateCharacteristic(this.platform.AirthingsCharacteristics.RadonSta, data?.radon_sta || 0);
-      data && this.updateHomeKitAirQualityChar(data) 
+      const aq = this.calAirQuality(data)
+      this.RadonSvc.updateCharacteristic(this.platform.Characteristic.AirQuality, aq);
+      if (data) {
+        const { lastUpdateAt } = data
+        this.RadonSvc.updateCharacteristic(this.platform.AirthingsCharacteristic.RadonLta, data.radon_lta);
+        this.RadonSvc.updateCharacteristic(this.platform.AirthingsCharacteristic.RadonSta, data.radon_sta);
+        this.RadonSvc.updateCharacteristic(this.platform.Characteristic.StatusActive,
+          Date.now() / 1000 - lastUpdateAt / 1000 < 2 * 3600
+      );
+      }
       this.TempSvc.updateCharacteristic(this.platform.Characteristic.CurrentTemperature, data?.temperature || 0);
       this.HumiditySvc.updateCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, data?.humidity || 0);
+      
       this.platform.log.debug('Triggering RadonSvc:', data);
     }, this.platform.config.refreshTime * 1000);
   }
-  updateHomeKitAirQualityChar = (lastData: WAVE2) => {
-    const { radon_sta, lastUpdateAt } = lastData;
+  calAirQuality = (lastData: WAVE2 | undefined): number  => {
+    const radon_sta = lastData?.radon_sta;
     let aq = this.platform.Characteristic.AirQuality.UNKNOWN;
+    if (!radon_sta) {
+      return aq
+    }
     if (radon_sta >= 150) {
       aq =this.platform.Characteristic.AirQuality.POOR;
     }
@@ -101,12 +109,7 @@ export default class Wave2Accessory {
     else {
       aq =this.platform.Characteristic.AirQuality.EXCELLENT;
     }
-    // HomeKit Air Quality Service
-    this.RadonSvc.updateCharacteristic(this.platform.Characteristic.AirQuality, aq);
-    this.RadonSvc.updateCharacteristic(this.platform.Characteristic.OzoneDensity, radon_sta)
-    this.RadonSvc.updateCharacteristic(this.platform.Characteristic.StatusActive,
-      Date.now() / 1000 - lastUpdateAt / 1000 < 2 * 3600
-  );
+    return aq
   }
 
   /**
@@ -124,11 +127,15 @@ export default class Wave2Accessory {
    * @example
    * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
    */
-  getAttr = (type: 'radon_lta' | 'radon_sta' | 'temperature' | 'humidity') => async (): Promise<number> => {
+  getAttr = (type: 'radon_lta' | 'radon_sta' | 'temperature' | 'humidity') => async (): Promise<number|null> => {
     if (!this.lastData) {
-      const data = await this.platform.scanner.getData(this.device);
-      this.lastData = data;
+      try {
+        // const data = await this.platform.scanner.getData(this.device);
+        this.lastData = this.platform.scanner.lastData.get(this.device.sn)
+      } catch (err) {
+        return this.lastData?.[`${type}`] || 0
+      }
     }
-    return this.lastData[`${type}`]
+    return this.lastData?.[`${type}`] || 0
   }
 }

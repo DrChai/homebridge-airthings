@@ -15,7 +15,7 @@
       "scanTime": {
         "title": "Total scan time for AirThings devices in seconds",
         "type": "integer",
-        "default": 60,
+        "default": 24,
         "description": "Total scan time for AirThings devices in seconds"
       },
       "retryAfter": {
