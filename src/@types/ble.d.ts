@@ -7,4 +7,5 @@ interface BleConfig {
   scanTime: number;
   refreshTime: number;
   retryAfter: number;
+  passiveDiscover?: boolean;
 }
