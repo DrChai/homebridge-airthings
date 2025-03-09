@@ -64,10 +64,8 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
       log.debug('Executed didFinishLaunching callback');
       // run the method to discover / register your devices as accessories
       await this.discoverDevices();
-      this.scanner.startRunner();
     });
     this.api.on('shutdown', () => this.pluginShutdown());
-    log.debug('Done.');
   }
 
   /**
@@ -100,7 +98,7 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
     );
     const availableDevices = await this.scanner.getValidatedDevices();
     this.log.info('Found Available devices: ', availableDevices);
-
+    
     // loop over the discovered devices and register each one if it has not already been registered
     for (const [, device] of availableDevices) {
       // generate a unique id for the accessory this should be generated from
@@ -171,6 +169,7 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
         ]);
       }
     }
+    this.scanner.startRunner();
   };
 
   pluginShutdown() {

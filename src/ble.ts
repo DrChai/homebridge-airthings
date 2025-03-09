@@ -1,4 +1,4 @@
-import noble, { Peripheral } from '@abandonware/noble';
+import { Peripheral } from '@abandonware/noble';
 import { Logging } from 'homebridge';
 import {
   parseSerial,
@@ -18,6 +18,8 @@ export default class {
   lastData: Map<string, WAVE2> = new Map();
   stopRunner: boolean = false;
   config: BleConfig;
+  startScanning: () => void;
+  stopScanning: () => void;
   constructor(bleConfig: BleConfig, log: Logging) {
     this.log = log;
     // Configs
@@ -29,37 +31,49 @@ export default class {
           ? 5 * 60 * 1000
           : bleConfig.refreshTime,
     };
-    // Can only scan/connect/send if the noble stateChange is 'poweredOn'
+    this.startScanning = () => {
+      throw new Error('[BLE] Bluetooth(noble) is not available');
+    };
+    this.stopScanning = () => {
+      throw new Error('[BLE] Bluetooth(noble) is not available');
+    };
+
+    this.initNoble()
+      .then(() => this.log.info('[BLE] Bluetooth(noble) is ready!'))
+      .catch((err) => {
+        this.log.error('[BLE] Bluetooth(noble) is not available');
+        this.log.error(err);
+      });
+  }
+
+  async initNoble() {
+    const noble = (await import('@abandonware/noble')).default;
     noble.on('scanStart', () => {
       this.log.debug('[BLE] starting the discover.');
     });
     noble.on('scanStop', () => {
       this.log.debug('[BLE] stopped the discover.');
-      // if (this.isScanning) {
-      // this.log.debug(`retry in ${this.config.restartDelay}s`);
-      // setTimeout(() => {
-      //   this.log.debug(`[BLE] Restarting scan.`);
-      //   this.startScanning();
-      // }, this.platform.config.retryAfter * 1000);
-      // }
     });
-
+  
     noble.on('stateChange', (state: string) => {
       this.curState = state;
       if (state === 'poweredOn') {
         this.log.debug('[BLE] Adapter is powered on.');
       } else {
         this.log.error('[BLE] %s.', state);
-        noble.stopScanning();
+        this.stopScanning();
       }
     });
     noble.on('discover', this.sensorStartDiscovery);
+    this.startScanning = () => {
+      this.isScanning = true;
+      noble.startScanning([], true);
+    };
+    this.stopScanning = () => {
+      this.isScanning = false;
+      noble.stopScanning();
+    };
   }
-
-  startScanning = () => {
-    this.isScanning = true;
-    noble.startScanning([], true);
-  };
 
   getValidatedDevices = async (): Promise<Map<string, DeviceInfo>> => {
     if (this.curState !== 'poweredOn') {
@@ -68,9 +82,13 @@ export default class {
       );
       await new Promise((resolve) => {
         const checkState = () => {
+    
           if (this.curState === 'poweredOn') {
             resolve(null);
           } else {
+            this.log.info(
+              `[BLE] bluetooth state: ${this.curState}. rechecking after ${this.config.retryAfter/1000}s.`,
+            );
             setTimeout(checkState, this.config.retryAfter);
           }
         };
@@ -80,8 +98,7 @@ export default class {
     this.startScanning();
     await new Promise((resolve) => {
       setTimeout(() => {
-        noble.stopScanning();
-        this.isScanning = false;
+        this.stopScanning();
         this.log.debug(
           `[BLE] Scan complete. after scanTime: ${this.config.scanTime / 1000}s`,
         );
@@ -183,12 +200,13 @@ export default class {
   };
 
   disconnect = async (peripheral: Peripheral) => {
-    noble.stopScanning();
+    this.stopScanning();
     await Promise.race([sleep(1000 * 5), peripheral.disconnectAsync()]);
   };
   // Method to stop the runner
   stop = () => {
     this.stopRunner = true;
+    this.stopScanning();
     this.log.debug(
       '[BLE] Stop flag set. Runner will stop after current iteration.',
     );
@@ -199,6 +217,5 @@ export default class {
     this.discoveredDeivces.clear();
     this.discoveredPeripherals.clear();
     this.lastData.clear();
-    this.isScanning = false;
   };
 }
