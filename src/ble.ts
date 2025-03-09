@@ -67,15 +67,11 @@ export default class {
     noble.on('discover', this.sensorStartDiscovery);
     this.startScanning = () => {
       this.isScanning = true;
-      if (!this.config.passiveDiscover) {
-        noble.startScanning([], true);
-      }
+      noble.startScanning([], true);
     };
     this.stopScanning = () => {
       this.isScanning = false;
-      if (!this.config.passiveDiscover) {
-        noble.stopScanning();
-      }
+      noble.stopScanning();
     };
   }
 

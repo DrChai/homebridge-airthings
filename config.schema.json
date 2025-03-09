@@ -45,12 +45,6 @@
         "type": "integer",
         "default": 3600,
         "description": "Specifies the refresh time for sync data from all AirThings devices in seconds (default 60min)"
-      },
-      "passiveDiscover": {
-        "title": "[experiment] Leave Bluetooth scanning in control. ",
-        "type": "boolean",
-        "default": false,
-        "description": "[experiment] Leave Bluetooth scanning in control."
       }
     }
   },

@@ -49,7 +49,6 @@ export default class AirThingsPlatform implements DynamicPlatformPlugin {
         scanTime: this.config.scanTime * 1000,
         retryAfter: this.config.retryAfter * 1000,
         refreshTime: this.config.refreshTime * 1000,
-        passiveDiscover: this.config.passiveDiscover || false,
       },
       this.log,
     );
