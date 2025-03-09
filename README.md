@@ -26,9 +26,9 @@ npm install -g @dr_chai/homebridge-airthings
       "name": "AirThings",
       "displayRadonSTA": false,
       "displayRadonLTA": false,
-      "scanTime": 24, // Optional
-      "retryAfter": 30, // Optional
-      "refreshTime": 3600 // Optional
+      "scanTime": 24, // Optional, default: 24s 
+      "retryAfter": 30, // Optional, defaul:30s 
+      "refreshTime": 3600 // Optional, default: 3600s(1 hour). minimum: 300s(5 minutes) for battery life and matches the sensor read interval 
     }
   ]
 }

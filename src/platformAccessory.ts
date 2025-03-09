@@ -108,20 +108,22 @@ export default class Wave2Accessory {
     setInterval(() => {
       const data = this.platform.scanner.lastData.get(this.device.sn);
       const aq = this.calAirQuality(data);
-      this.RadonSvc.updateCharacteristic(
-        this.platform.Characteristic.AirQuality,
-        aq,
-      );
+      if (this.lastData?.radon_sta !== data?.radon_sta) {
+        this.RadonSvc.updateCharacteristic(
+          this.platform.Characteristic.AirQuality,
+          aq,
+        );
+      }
       if (data) {
         const { lastUpdateAt } = data;
         const { displayRadonSTA, displayRadonLTA } = this.platform.config;
-        if (displayRadonSTA) {
+        if (displayRadonSTA && this.lastData?.radon_sta !== data.radon_sta) {
           this.RadonSvc.updateCharacteristic(
             this.platform.AirthingsCharacteristic.RadonSta,
             data.radon_sta,
           );
         }
-        if (displayRadonLTA) {
+        if (displayRadonLTA && this.lastData?.radon_lta !== data.radon_lta) {
           this.RadonSvc.updateCharacteristic(
             this.platform.AirthingsCharacteristic.RadonLta,
             data.radon_lta,
@@ -143,6 +145,7 @@ export default class Wave2Accessory {
       );
 
       this.platform.log.debug('Triggering RadonSvc:', data);
+      this.lastData = data;
     }, this.platform.config.refreshTime * 1000);
   }
   calAirQuality = (lastData: WAVE2 | undefined): number => {

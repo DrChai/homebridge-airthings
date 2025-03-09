@@ -122,9 +122,11 @@ export default class {
       address,
     } = peripheral;
     const sn = manufacturerData && parseSerial(manufacturerData);
-
-    if (sn) {
+    
+    if (sn && !this.discoveredDeivces.has(sn.toString()) ) {
       this.discoveredPeripherals.set(sn.toString(), peripheral);
+      peripheral.on('connect', (error: string) => this.log.debug(`[BLE] [${sn.toString()}] connected with: ${error}`));
+      peripheral.on('disconnect', (error: string) => this.log.debug(`[BLE] [${sn.toString()}] disconnected with: ${error}`));
       this.discoveredDeivces.set(sn.toString(), {
         sn: sn.toString(),
         id: address || id,
