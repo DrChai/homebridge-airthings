@@ -153,11 +153,11 @@ export default class {
         );
       }
     }
-
-    await sleep(this.config.refreshTime);
     this.log.debug(
-      `[BLE] Runner will in ${this.config.refreshTime / 1000 / 60}mins. `,
+      `[BLE] Next sync will be scheduled in ${this.config.refreshTime / 1000 / 60}mins. `,
     );
+    await sleep(this.config.refreshTime);
+ 
     this.startRunner();
   };
 
